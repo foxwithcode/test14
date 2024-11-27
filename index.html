@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Collector</title>
+</head>
+<body>
+    <h1>Welcome to the Happy Land</h1>
+    <p>Your IP address is: <span id="ipAddress"></span></p>
+    <p>Your user agent is: <span id="userAgent"></span></p>
+    <p>Your latitude is: <span id="latitude"></span></p>
+    <p>Your longitude is: <span id="longitude"></span></p>
+    <p>The current time is: <span id="currentTime"></span></p>
+
+    <script>
+        // Function to fetch IP address
+        function getIPAddress() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('ipAddress').textContent = data.ip;
+                })
+                .catch(error => {
+                    console.log('Error fetching IP address:', error);
+                });
+        }
+
+        // Function to get user agent
+        function getUserAgent() {
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+        }
+
+        // Function to get latitude and longitude
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                console.log('Geolocation is not supported by this browser.');
+            }
+        }
+
+        function showPosition(position) {
+            document.getElementById('latitude').textContent = position.coords.latitude;
+            document.getElementById('longitude').textContent = position.coords.longitude;
+        }
+
+        function showError(error) {
+            console.log('Error getting location:', error);
+        }
+
+        // Function to get current time
+        function getCurrentTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+        }
+
+        // Call functions on page load
+        getIPAddress();
+        getUserAgent();
+        getLocation();
+        getCurrentTime();
+    </script>
+</body>
+</html>
